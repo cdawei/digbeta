@@ -1,0 +1,214 @@
+\section{Kendall's $\tau$}
+\label{sec:kendalltau}
+
+Given two ranks $X$ and $Y$, each with $n$ observations, we define
+\begin{itemize}
+\item Number of concordant pairs 
+      \begin{equation*}
+      %C = \sum_{i < j} \left( \mathbbm{1}(X_i < X_j)  \mathbbm{1}(Y_i < Y_j) + \mathbbm{1}(X_i > X_j)  \mathbbm{1}(Y_i > Y_j) \right),
+      C = \frac{1}{2} \sum_{i,j} \left( \llb X_i < X_j \rrb  \llb Y_i < Y_j \rrb + \llb X_i > X_j \rrb  \llb Y_i > Y_j \rrb \right),
+      \end{equation*}
+      where $\llb \cdot \rrb$ is the indicator function and 
+      $\sum_{i,j}$ means all unordered pairs $(i, j),~ i,j=1,\dots,n$ are counted twice.
+
+\item Number of discordant pairs 
+      \begin{equation*}
+      D = \frac{1}{2} \sum_{i,j} \left( \llb X_i < X_j \rrb  \llb Y_i > Y_j \rrb + \llb X_i > X_j \rrb  \llb Y_i < Y_j \rrb \right).
+      \end{equation*}
+
+\item Number of ties in $X$
+      \begin{equation*}
+      T_X = \frac{1}{2} \sum_{i \ne j} \llb X_i = X_j \rrb = \sum_k \frac{t_k (t_k - 1)}{2},
+      \end{equation*}
+      where $t_k$ is the number of tied values in the $k$-th group of ties for $X$, for example, if
+      $X = [12, 2, 1, 12, 2, 2, 1]$, there are $3$ groups of tied values, the first group is the two $12$'s, i.e., $t_1 = 2$;
+      the second group is the three $2$'s, i.e., $t_2 = 3$; the third group is the two $1$'s, i.e., $t_3 = 2$. \\
+      Similarly, the number of ties in $Y$ is 
+      \begin{equation*}
+      T_Y = \frac{1}{2} \sum_{i \ne j} \llb Y_i = Y_j \rrb = \sum_k \frac{u_k (u_k - 1)}{2},
+      \end{equation*}
+      where $u_k$ is the number of tied values in the $k$-th group of ties for $Y$.
+
+\item Number of ties in both $X$ and $Y$
+      \begin{equation*}
+      T_{XY} = \frac{1}{2} \sum_{i \ne j} \llb X_i = X_j \rrb  \llb Y_i = Y_j \rrb.
+      \end{equation*}
+
+\item Number of ties only in $X$
+      \begin{equation*}
+      T = \frac{1}{2} \sum_{i \ne j} \llb X_i = X_j \rrb  \llb Y_i \ne Y_j \rrb,
+      \end{equation*}
+      and the number of ties only in $Y$
+      \begin{equation*}
+      U = \frac{1}{2} \sum_{i \ne j} \llb X_i \ne X_j \rrb  \llb Y_i = Y_j \rrb.
+      \end{equation*}
+\end{itemize}
+
+Kendall's $\tau$ (version $b$) is defined as~\cite{kendall1945,agresti2010analysis} (and implemented in SciPy~\cite{scipy})
+\begin{equation*}
+\tau_b = \frac{C - D}{\sqrt{[n(n-1)/2 - T_X] [n(n-1)/2 - T_Y]}} = \frac{C - D}{\sqrt{(C + D + T) (C + D + U)}},
+\end{equation*}
+where we use equalities 
+\begin{align*}
+\frac{n(n-1)}{2} &= C + D + T_X + T_Y - T_{XY} \\
+T &= T_X - T_{XY} \\
+U &= T_Y - T_{XY}
+\end{align*}
+
+
+
+\subsection{Compare Kendall's $\tau$ with F$_1$ score on points and pairs}
+\label{sec:metriccomparison}
+
+Given a prediction $\hat{\mathbf{y}} = (\hat{y}_1, \hat{y}_2, \dots, \hat{y}_K)$ and ground truth $\mathbf{y} = (y_1, y_2, \dots, y_K)$,
+for a specific ordering of POIs $(p_1, p_2, \dots, p_{|\mathcal{P}|})$,
+we produce two ranks according to $\mathbf{y}$ and $\hat{\mathbf{y}}$,
+\begin{align*}
+r_i       &= \sum_{j=1}^K (| \mathcal{P} | - j + 1)  \llb p_i = y_j \rrb,~
+i = 1, \dots, | \mathcal{P} | \\
+\hat{r}_i &= \sum_{j=1}^K (| \mathcal{P} | - j + 1)  \llb p_i = \hat{y}_j \rrb,~ 
+i = 1, \dots, | \mathcal{P} |
+\end{align*}
+where POIs not in $\mathbf{y}$ will have a rank of $0$ in $r$ and similarly in $r$.
+Then we have
+\begin{align*}
+C &= \frac{1}{2} \sum_{i,j} \left(\llb r_i < r_j \rrb  \llb \hat{r}_i < \hat{r}_j \rrb +
+     \llb r_i > r_j \rrb  \llb \hat{r}_i > \hat{r}_j \rrb \right), ~i,j = 1, \dots, | \mathcal{P} | \\
+D &= \frac{1}{2} \sum_{i,j} \left(\llb r_i < r_j \rrb  \llb \hat{r}_i > \hat{r}_j \rrb +
+     \llb r_i > r_j \rrb  \llb \hat{r}_i < \hat{r}_j \rrb \right), \\
+T_{\mathbf{y}} &= \frac{1}{2} \sum_{i \ne j} \llb r_i = r_j \rrb 
+                = \frac{1}{2} \sum_{i \ne j} \llb r_i = 0 \rrb  \llb r_j = 0 \rrb 
+                = \frac{1}{2} \left( |\mathcal{P}| - K \right) \left( |\mathcal{P}| - K - 1 \right), \\ 
+T_{\hat{\mathbf{y}}} &= \frac{1}{2} \sum_{i \ne j} \llb \hat{r}_i = \hat{r}_j \rrb
+                      = \frac{1}{2} \sum_{i \ne j} \llb \hat{r}_i = 0 \rrb  \llb \hat{r}_j = 0 \rrb
+                      = \frac{1}{2} \left( |\mathcal{P}| - K \right) \left( |\mathcal{P}| - K - 1 \right), \\ 
+T_{\mathbf{y},\hat{\mathbf{y}}} &= \frac{1}{2} \sum_{i \ne j} \llb r_i = r_j \rrb  \llb \hat{r}_i = \hat{r}_j \rrb
+                                 = \frac{1}{2} \sum_{i \ne j} \llb r_i = 0 \rrb  \llb r_j = 0 \rrb 
+                                   \llb \hat{r}_i = 0 \rrb  \llb \hat{r}_j = 0 \rrb
+                                 = \frac{1}{2} {d(d-1)},
+\end{align*}
+where $d = \sum_j \llb r_j = 0 \rrb  \llb \hat{r}_j = 0 \rrb$.
+Kendall's $\tau$ is
+\begin{equation*}
+\tau_b = \frac{C - D}{\sqrt{(C + D + T) (C + D + U)}},
+\end{equation*}
+where $T = T_{\mathbf{y}} - T_{\mathbf{y},\hat{\mathbf{y}}}$ and $U = T_{\hat{\mathbf{y}}} - T_{\mathbf{y},\hat{\mathbf{y}}}$.
+As $T_{\y} = T_{\hat\y}$, the denominator of $\tau_b$ is 
+\begin{align*}
+&\sqrt{(C + D + T)(C + D + U)} \\
+&= \sqrt{(C + D + T_{\y} - T_{\y,\hat\y})(C + D + T_{\hat\y} - T_{\y,\hat\y})} \\
+&= C + D + T_{\y} - T_{\y,\hat\y} \\
+&= \frac{1}{2} \sum_{i,j} \left( \llb r_i < r_j \rrb \llb \hat{r}_i < \hat{r}_j \rrb + \llb r_i > r_j \rrb \llb \hat{r}_i > \hat{r}_j \rrb +
+                                 \llb r_i < r_j \rrb \llb \hat{r}_i > \hat{r}_j \rrb + \llb r_i > r_j \rrb \llb \hat{r}_i < \hat{r}_j \rrb \right) +
+   T_{\y} - T_{\y,\hat\y} \\
+&= \frac{1}{2} \sum_{i,j} \left( \llb r_i < r_j \rrb + \llb r_i > r_j \rrb \right) 
+                          \left( \llb \hat{r}_i < \hat{r}_j \rrb + \llb \hat{r}_i > \hat{r}_j \rrb \right) + T_{\y} - T_{\y,\hat\y} \\
+&= \frac{1}{2} \sum_{i \ne j} \left( 1 - \llb r_i = r_j \rrb \right) \left( 1 - \llb \hat{r}_i = \hat{r}_j \rrb \right) + T_{\y} - T_{\y,\hat\y} \\
+&= \frac{1}{2} \sum_{i \ne j} \left( 1 - \llb r_i = r_j \rrb - \llb \hat{r}_i = \hat{r}_j \rrb + 
+                                         \llb r_i = r_j \rrb \llb \hat{r}_i = \hat{r}_j \rrb \right) + 
+   \frac{1}{2} \sum_{i \ne j} \llb r_i = r_j \rrb - \frac{1}{2} \sum_{i \ne j} \llb r_i = r_j \rrb \llb \hat{r}_i = \hat{r}_j \rrb \\
+&= \frac{1}{2} \sum_{i \ne j} 1 - \frac{1}{2} \sum_{i \ne j} \llb \hat{r}_i = \hat{r}_j \rrb \\
+&= \frac{1}{2} |\mathcal{P}|(|\mathcal{P}| - 1) - \frac{1}{2} (|\mathcal{P}| - K) (|\mathcal{P}| - K - 1) \\
+&= K|\mathcal{P}| - \frac{K(K + 1)}{2}
+\end{align*}
+So
+\begin{equation*}
+\tau_b = \frac{C - D}{K|\mathcal{P}| - K(K + 1)/2}
+\end{equation*}
+
+F$_1$ score on points is
+\begin{equation*}
+F_1 = \frac{1}{K} \sum_i \llb r_i > 0 \rrb  \llb \hat{r}_i > 0 \rrb,
+\end{equation*}
+and F$_1$ score on pairs is
+\begin{equation*}
+\text{pairs-F}_1 = \frac{\frac{1}{2} \sum_{i,j} 
+                   \llb r_i < r_j \rrb  \llb r_i > 0 \rrb 
+                   \llb \hat{r}_i < \hat{r}_j \rrb  \llb \hat{r}_i > 0 \rrb +
+                   \frac{1}{2} \sum_{i,j} 
+                   \llb r_i > r_j \rrb  \llb r_j > 0 \rrb 
+                   \llb \hat{r}_i > \hat{r}_j \rrb  \llb \hat{r}_j > 0 \rrb}{K(K-1)/2}.
+\end{equation*}
+
+Define $\bar{r}_i = \llb r_i > 0 \rrb$ and $\bar{\hat{r}}_i = \llb \hat{r}_i > 0 \rrb$,
+which means the values of both $\bar{r}_i$ and $\bar{\hat{r}}_i$ are binary, as a result,
+the number of concordant pairs between rank $\bar{r}$ and rank $\bar{\hat{r}}$ can be written as
+\begin{align*}
+\bar{C} &= \frac{1}{2} \sum_{i,j} \left(
+           \llb \bar{r}_i < \bar{r}_j \rrb  \llb \bar{\hat{r}}_i < \bar{\hat{r}}_j \rrb +
+           \llb \bar{r}_i > \bar{r}_j \rrb  \llb \bar{\hat{r}}_i > \bar{\hat{r}}_j \rrb \right) \\
+        &= \frac{1}{2} \sum_{i,j} \left(
+           \llb \bar{r}_i = 0 \rrb  \llb \bar{r}_j = 1 \rrb  \llb \bar{\hat{r}}_i = 0 \rrb  \llb \bar{\hat{r}}_j = 1 \rrb +
+           \llb \bar{r}_i = 1 \rrb  \llb \bar{r}_j = 0 \rrb  \llb \bar{\hat{r}}_i = 1 \rrb  \llb \bar{\hat{r}}_j = 0 \rrb \right) \\
+        &= \frac{1}{2} \sum_{i,j} \left(
+           \llb r_i = 0 \rrb  \llb r_j > 0 \rrb  \llb \hat{r}_i = 0 \rrb  \llb \hat{r}_j > 0 \rrb +
+           \llb r_i > 0 \rrb  \llb r_j = 0 \rrb  \llb \hat{r}_i > 0 \rrb  \llb \hat{r}_j = 0 \rrb \right) \\
+        &= \frac{1}{2} \sum_{i,j} \left(
+           \llb r_i < r_j \rrb  \llb r_i = 0 \rrb  \llb \hat{r}_i < \hat{r}_j \rrb  \llb \hat{r}_i = 0 \rrb +
+           \llb r_i > r_j \rrb  \llb r_j = 0 \rrb  \llb \hat{r}_i > \hat{r}_j \rrb  \llb \hat{r}_j = 0 \rrb \right) \\
+        &= \frac{1}{2} \sum_{i,j} \llb r_i < r_j \rrb  \llb r_i = 0 \rrb  \llb \hat{r}_i < \hat{r}_j \rrb  \llb \hat{r}_i = 0 \rrb +
+           \frac{1}{2} \sum_{i,j} \llb r_i > r_j \rrb  \llb r_j = 0 \rrb  \llb \hat{r}_i > \hat{r}_j \rrb  \llb \hat{r}_j = 0 \rrb \\
+        &= \frac{1}{2} \sum_{i,j} \llb r_i < r_j \rrb  \llb r_i = 0 \rrb  \llb \hat{r}_i < \hat{r}_j \rrb  \llb \hat{r}_i = 0 \rrb +
+           \frac{1}{2} \sum_{i,j} \llb r_j < r_i \rrb  \llb r_j = 0 \rrb  \llb \hat{r}_j < \hat{r}_i \rrb  \llb \hat{r}_j = 0 \rrb \\
+        &= \sum_{i,j} \llb r_i < r_j \rrb  \llb r_i = 0 \rrb  \llb \hat{r}_i < \hat{r}_j \rrb  \llb \hat{r}_i = 0 \rrb \\
+        &= \sum_{i,j} \llb r_i > r_j \rrb  \llb r_j = 0 \rrb  \llb \hat{r}_i > \hat{r}_j \rrb  \llb \hat{r}_j = 0 \rrb.
+\end{align*}
+
+Furthermore, we can rewrite the F$_1$ score on points as 
+\begin{align*}
+F_1 &= \frac{1}{K} \sum_i \llb r_i > 0 \rrb  \llb \hat{r}_i > 0 \rrb \\
+    &= \frac{\frac{1}{K} \sum_{i,j} \llb r_i > r_j \rrb  \llb r_j = 0 \rrb  \llb \hat{r}_i > \hat{r}_j \rrb  \hat{r}_j = 0 \rrb}
+            {\sum_j \llb r_j = 0 \rrb  \llb \hat{r}_j = 0 \rrb} ~~ 
+            \text{as we repeatedly count the same $i$ for all $r_j = 0$ and $\hat{r}_j = 0$}, \\
+    &= \frac{\bar{C}} {dK}.
+\end{align*}
+
+We can rewrite the number of concordant pairs as
+\begin{align*}
+C =& \frac{1}{2} \sum_{i,j} \left(\llb r_i < r_j \rrb  \llb \hat{r}_i < \hat{r}_j \rrb +
+     \llb r_i > r_j \rrb  \llb \hat{r}_i > \hat{r}_j \rrb \right), \\
+  =& \frac{1}{2} \sum_{i,j} \llb r_i < r_j \rrb  
+     \left( \llb r_i > 0 \rrb + \llb r_i = 0 \rrb \right)  
+     \llb \hat{r}_i < \hat{r}_j \rrb 
+     \left( \llb \hat{r}_i > 0 \rrb + \llb \hat{r}_i = 0 \rrb \right) + \\
+   & \frac{1}{2} \sum_{i,j} \llb r_i > r_j \rrb  
+     \left( \llb r_j > 0 \rrb + \llb r_j = 0 \rrb \right) 
+     \llb \hat{r}_i > \hat{r}_j \rrb 
+     \left( \llb \hat{r}_j > 0 \rrb + \llb \hat{r}_j = 0 \rrb \right) \\
+  =& \frac{1}{2} \sum_{i,j} \left( \uwave{\llb r_i < r_j \rrb  \llb r_i > 0 \rrb} +
+            \llb r_i < r_j \rrb  \llb r_i = 0 \rrb \right)  
+     \left( \uwave{\llb \hat{r}_i < \hat{r}_j \rrb  \llb \hat{r}_i > 0 \rrb} + 
+            \llb \hat{r}_i < \hat{r}_j \rrb  \llb \hat{r}_i = 0 \rrb \right) + \\
+   & \frac{1}{2} \sum_{i,j} \left( \uwave{\llb r_i > r_j \rrb  \llb r_j > 0 \rrb} + 
+            \llb r_i > r_j \rrb  \llb r_j = 0 \rrb \right) 
+     \left( \uwave{\llb \hat{r}_i > \hat{r}_j \rrb  \llb \hat{r}_j > 0 \rrb} + 
+            \llb \hat{r}_i > \hat{r}_j \rrb  \llb \hat{r}_j = 0 \rrb \right) \\
+  =& \frac{1}{2} \sum_{i,j} \uwave{\llb r_i < r_j \rrb  \llb r_i > 0 \rrb 
+                         \llb \hat{r}_i < \hat{r}_j \rrb  \llb \hat{r}_i > 0 \rrb} +
+     \frac{1}{2} \sum_{i,j} \uwave{\llb r_i > r_j \rrb  \llb r_j > 0 \rrb 
+                         \llb \hat{r}_i > \hat{r}_j \rrb  \llb \hat{r}_j > 0 \rrb} + \\
+   & \frac{1}{2} \sum_{i,j} \left( \uwave{\llb r_i < r_j \rrb  \llb r_i > 0 \rrb} 
+                         \llb \hat{r}_i < \hat{r}_j \rrb  \llb \hat{r}_i = 0 \rrb + 
+                         \llb r_i < r_j \rrb  \llb r_i = 0 \rrb  
+                         \llb \hat{r}_i < \hat{r}_j \rrb \right) + \\ 
+   & \frac{1}{2} \sum_{i,j} \left( \uwave{\llb r_i > r_j \rrb  \llb r_j > 0 \rrb} 
+                         \llb \hat{r}_i > \hat{r}_j \rrb  \llb \hat{r}_j = 0 \rrb +
+                         \llb r_i > r_j \rrb  \llb r_j = 0 \rrb 
+                         \llb \hat{r}_i > \hat{r}_j \rrb \right) \\
+  =& ~\text{pairs-F}_1  \frac{K(K-1)}{2}~ + \\
+   & \frac{1}{2} \sum_{i,j} \left( \uwave{\llb r_i < r_j \rrb  \llb r_i > 0 \rrb} 
+                         \llb \hat{r}_i < \hat{r}_j \rrb  \llb \hat{r}_i = 0 \rrb + 
+                         \llb r_i < r_j \rrb  \llb r_i = 0 \rrb  
+                         \llb \hat{r}_i < \hat{r}_j \rrb \right) + \\ 
+   & \frac{1}{2} \sum_{i,j} \left( \uwave{\llb r_i > r_j \rrb  \llb r_j > 0 \rrb} 
+                         \llb \hat{r}_i > \hat{r}_j \rrb  \llb \hat{r}_j = 0 \rrb +
+                         \llb r_i > r_j \rrb  \llb r_j = 0 \rrb 
+                         \llb \hat{r}_i > \hat{r}_j \rrb \right).
+\end{align*}
+We can simplify $C-D$ and $C+D$ in a similar manner,
+\begin{align*}
+C-D &= \frac{1}{2} \sum_{i,j} \left( \llb r_j > 0 \rrb (1 - \llb r_i > r_j \rrb) - \llb r_i > 0 \rrb (1 - \llb r_i < r_j \rrb) \right)
+       \left( \llb \hat{r}_j > 0 \rrb (1 - \llb \hat{r}_i > \hat{r}_j \rrb) - \llb \hat{r}_i > 0 \rrb (1 - \llb \hat{r}_i < \hat{r}_j \rrb) \right) \\
+C+D &= \frac{1}{2} \sum_{i,j} \left( \llb r_j > 0 \rrb (1 + \llb r_i > r_j \rrb) + \llb r_i > 0 \rrb (1 + \llb r_i < r_j \rrb) \right)
+       \left( \llb \hat{r}_j > 0 \rrb (1 + \llb \hat{r}_i > \hat{r}_j \rrb) + \llb \hat{r}_i > 0 \rrb (1 + \llb \hat{r}_i < \hat{r}_j \rrb) \right)
+\end{align*}

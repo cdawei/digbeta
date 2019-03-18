@@ -1,0 +1,73 @@
+% !TEX root=main.tex
+
+% \blue{
+% We should probably ask Phil Kilby or Hassan about the two or three most popular subtour eliminations
+
+% \begin{itemize}
+% 	\item Elementary shortest path problems
+%   %http://www.optimization-online.org/DB_FILE/2014/09/4560.pdf
+% 	\item Different subtour eliminations
+%   	\item (Dantzig, Fulkerson, Johnson, 1954) has 3 different versions
+%   	\item (Miller, Tucker, Zemlin, 1960) has another one.
+%   	\item Seems to be one more, not sure by whom (maybe Belmore, Malone, 1971)
+%   %http://www.or.unc.edu/~pataki/papers/teachtsp.pdf
+
+% \end{itemize}
+% }
+
+One way to exactly solve Equation \ref{eqn:argmax-path}
+is to observe its similarity to the travelling salesman problem (TSP).
+Indeed, if the length $l = |\PCal|$, so that every POI is restricted to be visited once,
+then we exactly get the TSP problem;
+however, for smaller $l$, we require visiting only a \emph{subset} of POIs,
+which is not a vanilla instance of TSP.
+
+Nonetheless, we may take inspiration from methods to solve the TSP to attack our problem.
+In particular, 
+we can formulate the trip recommendation problem as an \emph{integer linear program} (\emph{ILP}),
+as often done for the TSP \citep{opt98}.
+% Instead of simply bypassing repeated revisits, 
+% we can make use of subtour elimination techniques developped by the TSP research community,
+% by formulating the trip recommendation problem with integer linear programming (ILP).
+%The additional benefits of this formulation is that fixing the subset of POIs is not required any more,
+%we can optimise over all possible subset of POIs using the off-the-shelf ILP solvers.
+Formally, given a starting location $s$ and the required trip length $l$,
+%we maximise the desired trip score over all possible subsets with $l$ POIs from the whole set of POIs $\{p_j\}_{j=1}^m$
+we find the best possible path
+via \citep{Chen:2017}
+
+\resizebox{0.9625\linewidth}{!}{
+\begin{minipage}{0.9625\linewidth}
+	\begin{align*}
+	\max_{\bu, \mathbf{v}} & \sum_{k=1}^m \alpha( p_k ) \cdot \sum_{j=1}^m u_{jk} +
+	            \sum_{j,k=1}^m u_{jk} \cdot \beta( p_j, p_k ) \\
+	s.t. 
+	& \sum_{k=2}^m u_{1k} = 1, \, z(\bu)_1 = 0, z(\bu)_i \in \{ 0, 1 \} \, &&(\forall i \in \{2,\cdots,m\}) \\
+	& \sum_{j,k=1}^m u_{jk} = l-1, \, \sum_{j=1}^m u_{jj} = 0, \, \sum_{j=1}^m u_{ji} \leq 1 \, &&(\forall i \in \{2,\cdots,m\}) \\
+	& v_j - v_k + 1 \le (m-1) (1-u_{jk}) \, &&(\forall j,k \in \{2,\cdots,m\}).
+	\end{align*}
+\end{minipage}
+}
+
+\vspace{0.5\baselineskip}
+
+Here, we index POIs such that $s = p_1$ for brevity.
+%and we strictly ask for a path that starts from $s$ and travels $l$ distinct POIs.
+The binary $u_{jk}$ are true iff
+we visit $p_k$ immediately after visiting $p_j$;
+the integer $v_j$ track the rank of $p_j$;
+%The binary variables $z_j$ indicate whether we end up at $p_j$.
+and $z(\bu)_i \defEq \sum_{j=1}^m u_{ji} - \sum_{k=1}^m u_{ik}$ indicates whether we end up at $p_i$.
+The constraints ensure we output a path of exactly $l$ POIs;
+the last constraint in particular ensures we do not have (disjoint) cycles, as per \citet{Miller:1960}.
+By reading off the values of $u_{jk}$, we can determine the predicted sequence.
+
+An off-the-shelf solver (\eg {\tt Gurobi}) may be used on the ILP.
+While ILPs have worst case exponential complexity,
+such solvers are highly optimised and thus make many problem instances tractable.
+
+The above ILP implicitly solves both the problem of selecting the set of $l$ POIs to recommend,
+and the problem of ordering them.
+We could fix the set of POIs to recommend, \eg by using the POIs in the Viterbi solution, and then find the optimal ordering of these nodes.
+However, we have found this to have only modest improvement over the loop elimination heuristic of the previous section.
+%which also builds upon the Viterbi solution.

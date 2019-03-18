@@ -1,0 +1,179 @@
+\appendix
+\begin{center}
+  {\Large\bf Appendix to ``Cold-start Playlist Recommendation with Multitask Learning''}
+\end{center}
+\rule{0pt}{50pt}
+
+
+%\section{Proof}
+\input{clf2rank}
+
+
+\clearpage
+\newpage
+
+\section{Evaluation metrics}
+The four evaluation metrics used in this work are:
+\begin{itemize}
+\item \emph{HitRate@K}, which is also known as Recall@K, is the number of correctly recommended songs amongst the top-$K$ recommendations over
+      the number of songs in the observed playlist.
+\item \emph{Area under the ROC curve} (AUC), which is the probability that a positive instance is ranked higher than a negative instance (on average).
+\item \emph{Novelty} measures the ability of a recommender system to suggest previously unknown (\ie novel) items,
+      $$
+      \text{Novelty@K} 
+      = \frac{1}{U} \sum_{u=1}^U \frac{1}{|P_u^\textsc{test}|} \sum_{i \in P_u^\textsc{test}} \sum_{m \in S_K^i} 
+        \frac{-\log_2 pop_m}{K},
+      $$
+      where $P_u^\textsc{test}$ is the (indices of) test playlists from user $u$, 
+      $S_K^i$ is the set of top-$K$ recommendations for test playlist $i$ and $pop_m$ is the popularity of song $m$.
+      Intuitively, the more popular a song is, the more likely a user is to be familiar with it, and therefore the less likely to be novel.
+\item \emph{Spread} measures the ability of a recommender system to spread its attention across all possible items.
+      It is defined as the entropy of the distribution of all songs,
+      $$
+      \text{Spread} = -\sum_{m=1}^M P(m) \log P(m),
+      $$
+      where $P(m)$ denotes the probability of song $m$ being recommended,
+      which is computed from the scores of all possible songs using the \emph{softmax} function in this work.
+\end{itemize}
+
+
+\clearpage
+\newpage
+\twocolumn
+
+% span two columns
+\twocolumn[
+\section{Dataset}
+\rule{0pt}{10pt}  % gap
+]
+
+%\input{dataset_hist}
+
+\begin{figure}[!h]
+    \centering
+    \includegraphics[width=.98\columnwidth]{fig/hist_pluser.pdf}
+    \caption{Histogram of the number of playlists per user}
+    \label{fig:hist_pluser}
+\end{figure}
+
+\begin{figure}[!h]
+    \centering
+    \includegraphics[width=.98\columnwidth]{fig/hist_songpop.pdf}
+    \caption{Histogram of song popularity}
+    \label{fig:hist_songpop}
+\end{figure}
+
+The histograms of the number of playlists per user as well as song popularity 
+%(\ie the number of occurrences of a song in all playlists)
+of the two datasets are shown in Figure~\ref{fig:hist_pluser} and Figure~\ref{fig:hist_songpop},
+respectively.
+We can see from Figure~\ref{fig:hist_pluser} and Figure~\ref{fig:hist_songpop} that both the number
+of playlists per user and song popularity follow a long-tailed distribution, which imposes further challenge to the learning task 
+as the amount of data is very limited for users (or songs) at the tail.
+
+\newpage
+
+The training and test split of the two playlist datasets in the three cold-start settings are shown in 
+Table~\ref{tab:stats3}, Table~\ref{tab:stats4}, and Table~\ref{tab:stats1}, respectively.
+%\input{tab_stats}
+
+\begin{table}[!h]
+    \centering
+    %\setlength\tabcolsep{3pt}
+    \caption{Dataset for \emph{cold playlists}}
+    \label{tab:stats3}
+    \begin{tabular}{lrrcrr}
+        \toprule
+        \multirow{2}{*}{Dataset}  & \multicolumn{2}{c}{Training Set} && \multicolumn{2}{c}{Test Set} \\ \cmidrule{2-3} \cmidrule{5-6}
+                                  & Playlists & Users && Playlists & Users \\
+        \midrule
+        30Music   & 15,262 &  8,070 && 2,195  & 1,644 \\
+        AotM-2011 & 75,477 & 14,182 && 9,233  & 2,722 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\begin{table}[!h]
+    \centering
+    \caption{Dataset for \emph{cold users}}
+    \label{tab:stats4}
+    \begin{tabular}{lrrcrr}
+        \toprule
+        \multirow{2}{*}{Dataset}  & \multicolumn{2}{c}{Training Set} && \multicolumn{2}{c}{Test Set} \\ \cmidrule{2-3} \cmidrule{5-6}
+                                  & Users & Playlists && Users & Playlists \\
+        \midrule
+        30Music   & 5,649 & 14,067 && 2,420 & 3,390 \\
+        AotM-2011 & 9,928 & 76,450 && 4,254 & 8,260 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\begin{table}[!h]
+    \centering
+    \caption{Dataset for \emph{cold songs}}
+    \label{tab:stats1}
+    \begin{tabular}{lrrcrr}
+        \toprule
+        \multirow{2}{*}{Dataset}  & \multicolumn{2}{c}{Training Set} && \multicolumn{2}{c}{Test Set} \\ \cmidrule{2-3} \cmidrule{5-6}
+                                  & Songs & Playlists && Songs & Playlists \\
+        \midrule
+        30Music   & 40,468  & 17,342 && 5,000  & 8,215 \\
+        AotM-2011 & 104,428 & 84,646 && 10,000 & 19,504 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+
+\clearpage
+\newpage
+\onecolumn
+
+% span two columns
+%\twocolumn[
+\section{Empirical results}
+%\rule{0pt}{10pt}  % gap
+%]
+
+%\input{fig_hr_h}
+%\input{fig_nov_h}
+%\input{eval_per_user}
+
+\begin{figure*}[!h]
+    \centering
+    \begin{minipage}{0.45\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{fig/hr3.pdf}
+        \caption{Hit rate of recommendation in the \emph{cold playlists} setting. \emph{Higher} values indicate better performance.}
+        \label{fig:hr3}
+    \end{minipage}\hspace{15pt}
+    \begin{minipage}{0.45\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{fig/hr4.pdf}
+        \caption{Hit rate of recommendation in the \emph{cold users} setting. \emph{Higher} values indicate better performance.}
+        \label{fig:hr4}
+    \end{minipage}
+\end{figure*}
+
+\begin{figure*}[!h]
+    \centering
+    \begin{minipage}{0.45\textwidth}
+        \centering
+        \includegraphics[width=\columnwidth]{fig/nov4.pdf}
+        \caption{Novelty of recommendation in the \emph{cold users} setting. \emph{Moderate} values are preferable.}
+        \label{fig:nov4}
+    \end{minipage}\hspace{15pt}
+    \begin{minipage}{0.45\textwidth}
+        \centering
+        \includegraphics[width=\columnwidth]{fig/nov1.pdf}
+        \caption{Novelty of recommendation in the \emph{cold songs} setting. \emph{Moderate} values are preferable.}
+        \label{fig:nov1}
+    \end{minipage}
+\end{figure*}
+
+
+\clearpage
+\newpage
+\onecolumn
+
+%\section{Notations}
+\input{notation}

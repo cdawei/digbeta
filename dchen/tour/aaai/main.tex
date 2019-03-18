@@ -1,0 +1,188 @@
+\documentclass[letterpaper]{article} % Required US Letter
+\usepackage{aaai18}  % Required
+\usepackage{times}   % Required
+\usepackage{helvet}  % Required
+\usepackage{courier} % Required
+
+\setlength{\pdfpagewidth}{8.5in}  % Required
+\setlength{\pdfpageheight}{11in}  % Required
+
+%PDF Info Is Required:
+\pdfinfo{
+/Title (Trajectory Recommendation via Structured Prediction)
+%/Author (Authors list)
+}
+\setcounter{secnumdepth}{0}  
+ 
+%\usepackage[numbers,compress]{natbib}
+% if you need to pass options to natbib, use, e.g.:
+%\PassOptionsToPackage{numbers, compress}{natbib}
+
+% to compile a camera-ready version, add the [final] option, e.g.:
+% \usepackage[final]{nips_2017}
+
+\usepackage[utf8]{inputenc} % allow utf-8 input
+\usepackage[T1]{fontenc}    % use 8-bit T1 fonts
+%\usepackage[colorlinks=true,citecolor=blue]{hyperref}       % hyperlinks
+\usepackage{url}            % simple URL typesetting
+\usepackage{booktabs}       % professional-quality tables
+\usepackage{amsfonts}       % blackboard math symbols
+\usepackage{nicefrac}       % compact symbols for 1/2, etc.
+\usepackage{microtype}      % microtypography
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Custom packages
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% AKM: already present above!
+%\usepackage{hyperref}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{mathrsfs}
+\usepackage{bm}
+\usepackage{bbm}
+\usepackage{stmaryrd}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+%\usepackage[sc]{mathpazo}
+%\linespread{1.05}         % Palladio needs more leading (space between lines)
+\usepackage[T1]{fontenc}    % use 8-bit T1 fonts
+\usepackage{nicefrac}       % compact symbols for 1/2, etc.
+\usepackage{microtype}      % microtypography
+\usepackage{subcaption}     % sub-fig
+\usepackage{booktabs} % professional-quality tables
+\usepackage{graphicx}
+\graphicspath{{fig/}} % Location of the graphics files
+\usepackage{pdfpages} % include multi-page PDF file
+\usepackage{wrapfig}  % wrap text around figure, table and minipage
+\usepackage{footmisc} % provide labels for footnote
+\usepackage{colortbl} % cellcolor
+
+\usepackage{enumitem}
+\usepackage{capt-of}
+\usepackage{varwidth}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Custom notation
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\DeclareMathOperator*{\argmin}{argmin}
+\DeclareMathOperator*{\argmax}{argmax}
+\newcommand{\given}{\mid}
+\newcommand{\llb}{\llbracket}
+\newcommand{\rrb}{\rrbracket}
+\newcommand{\indicator}[1]{\llbracket #1 \rrbracket}
+\newcommand{\eat}[1]{}
+\newcommand{\Q}{\mathsf{Q}}
+\newcommand{\X}{\mathsf{X}}
+\newcommand{\Y}{\mathsf{Y}}
+\newcommand{\CCal}{\mathscr{C}}
+\newcommand{\QCal}{\mathscr{Q}}
+\newcommand{\XCal}{\mathscr{X}}
+\newcommand{\YCal}{\mathscr{Y}}
+\newcommand{\OSf}{O}
+\newcommand{\SSf}{\mathsf{S}}
+\newcommand{\Real}{\mathbb{R}}
+\newcommand{\E}[2]{\underset{#1}{\mathbb{E}}\left[ #2 \right]}
+\newcommand{\ES}[2]{\underset{#1}{\mathbb{E}}\, #2}
+\newcommand{\defEq}{\stackrel{.}{=}}
+
+
+% madeness: suPer-script in Brackets
+\newcommand{\pb}[1]{^{({#1})}}
+%\newcommand{\citet}[1]{\cite{#1}}
+%\newcommand{\citep}[1]{\cite{#1}}
+\newcommand{\citet}[1]{\citeauthor{#1}~\shortcite{#1}}
+\newcommand{\citep}{\cite}
+\newcommand{\citealp}[1]{\citeauthor{#1}~\citeyear{#1}}
+
+\newcommand{\bu}{\mathbf{u}}
+\newcommand{\bv}{\mathbf{v}}
+\newcommand{\bz}{\mathbf{z}}
+\newcommand{\x}{\mathbf{x}}
+\newcommand{\y}{\mathbf{y}}
+\newcommand{\w}{\mathbf{w}}
+\newcommand{\xii}{\mathbf{x}^{(i)}}
+\newcommand{\yii}{\mathbf{y}^{(i)}}
+\newcommand{\yij}{\mathbf{y}^{(ij)}}
+\newcommand{\yik}{\mathbf{y}^{(ik)}}
+
+\newcommand{\eg}{e.g.\ }
+\newcommand{\ie}{i.e.\ }
+
+\newcommand{\TODO}[1]{ {\color{blue}{\bf TODO:~{#1}}} }
+%\newcommand{\rev}[1]{{\color{red}{#1}}}
+\newcommand{\rev}[1]{{\color{black}{#1}}}
+
+\newcommand{\trajrec}{trajectory recommendation}
+\newcommand{\trajectory}{trajectory}
+\newcommand{\seqrec}{sequence recommendation}
+
+% \newcommand{\firstBest}[1]{\cellcolor{green!25}{#1}}
+% \newcommand{\secondBest}[1]{\cellcolor{yellow!25}{#1}}
+
+\newcommand{\firstBest}[1]{\cellcolor{gray!62}{#1}}
+\newcommand{\secondBest}[1]{\cellcolor{gray!20}{#1}}
+
+% spacing black magic 
+%\newcommand{\secmoveup}{\vspace{-3.5mm}}                %{\vspace{-0.12in}}
+%\newcommand{\ssecmoveup}{\vspace{-0.mm}}                %{\vspace{-0.12in}}
+%\newcommand{\bigsecmoveup}{\secmoveup\vspace{-0mm}}   %{\vspace{-0.08in}}
+%\newcommand{\textmoveup}{\vspace{-2.2mm}}               %{\vspace{-0.08in}}
+%\newcommand{\bigtextmoveup}{\textmoveup\vspace{-0.0in}} %{\vspace{-0.06in}}
+%\newcommand{\itemmoveup}{\vspace{-0.5mm}}                %{\vspace{-0.04in}}
+%\newcommand{\eqmoveup}{\vspace{-1.0mm}}                 %{\vspace{-0.16in}}
+%\newcommand{\captionmoveup}{\eqmoveup\vspace{-2.80mm}}   %{\vspace{-0.16in}}
+%\newcommand{\refitemmoveup}{\vspace{-0.mm}}   			  %{\vspace{-0.16in}}
+
+
+%\title{Structured Recommendation}
+%\title{Travel Sequence Recommendation via Structured Prediction}
+\title{Trajectory Recommendation via Structured Prediction}
+
+% The \author macro works with any number of authors. There are two
+% commands used to separate the names and addresses of multiple
+% authors: \And and \AND.
+%
+% Using \And between authors leaves it to LaTeX to determine where to
+% break the lines. Using \AND forces a line break at that point. So,
+% if LaTeX puts 3 of 4 authors names on the first line, and the last
+% on the second line, try using \AND instead of \And before the third
+% author name.
+
+\allowdisplaybreaks
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+\input{abstract}
+\end{abstract}
+%\captionmoveup
+
+\input{introduction}
+%\input{background}
+\input{seqrec}
+\input{model}
+\input{experiment}
+\input{related}
+\input{conclusion}
+
+% Acknowledgements should only appear in the accepted version.
+%\section*{Acknowledgements}
+%
+%\textbf{Do not} include acknowledgements in the initial version of
+%the paper submitted for blind review.
+%\clearpage
+
+%\setlength\bibsep{2pt} % from natbib
+
+\fontsize{9.5pt}{10.5pt} \selectfont
+\bibliographystyle{aaai}
+\bibliography{ref,ref_aditya}
+
+\clearpage
+\onecolumn
+\input{supplement}
+
+\end{document}

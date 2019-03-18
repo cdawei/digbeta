@@ -1,0 +1,157 @@
+\section{Proof of Lemma~\ref{lm:rank2clf}}
+
+First, we can approximate the empirical risk $R_{\uptheta}^{\textsc{rank}}$ (with the exponential surrogate) as follows:
+\begin{equation*}
+\begin{aligned}
+R_{\uptheta}^{\textsc{rank}}(f, \DCal)
+&= \frac{1}{N} \sum_{u=1}^U \sum_{i \in P_u} \frac{1}{M_-^i} \sum_{m': y_{m'}^i = 0} \exp \left( -\min_{m: y_m^i = 1} f(m, u, i) + f(m', u, i) \right) \\
+&= \frac{1}{N} \sum_{u=1}^U \sum_{i \in P_u} \frac{1}{M_-^i} \exp \left( -\min_{m: y_m^i = 1} f(m, u, i) \right) 
+   \sum_{m': y_{m'}^i = 0} \exp \left( f(m', u, i) \right) \\
+&\approx \frac{1}{N} \sum_{u=1}^U \sum_{i \in P_u} \frac{1}{M_-^i} \exp \left( \frac{1}{p} \log \sum_{m: y_m^i = 1} e^{-p f(m, u, i)} \right)
+   \sum_{m': y_{m'}^i = 0} \exp \left( f(m', u, i) \right) \\
+&= \frac{1}{N} \sum_{u=1}^U \sum_{i \in P_u} \frac{1}{M_-^i} \left( \sum_{m: y_m^i = 1} e^{-p f(m, u, i)} \right)^\frac{1}{p} 
+   \sum_{m': y_{m'}^i = 0} e^{f(m', u, i)} \\
+&= \frac{1}{N} \sum_{u=1}^U \sum_{i \in P_u} \frac{1}{M_-^i} \left( \left( \sum_{m': y_{m'}^i = 0} e^{f(m', u, i)} \right)^p 
+   \sum_{m: y_m^i = 1} e^{-p f(m, u, i)} \right)^\frac{1}{p} \\
+&= \frac{1}{N} \sum_{u=1}^U \sum_{i \in P_u} \frac{1}{M_-^i} \left( 
+   \sum_{m: y_m^i = 1} e^{-p f(m, u, i)} \left( \sum_{m': y_{m'}^i = 0} e^{f(m', u, i)} \right)^p \right)^\frac{1}{p} \\
+&= \frac{1}{N} \sum_{u=1}^U \sum_{i \in P_u} \frac{1}{M_-^i} \left( 
+   \sum_{m: y_m^i = 1} \left( \sum_{m': y_{m'}^i = 0} e^{- \left( f(m, u, i) - f(m', u, i) \right)} \right)^p \right)^\frac{1}{p} \\
+&= \widetilde R_{\uptheta}^{\textsc{rank}}(f, \DCal).
+\end{aligned}
+\end{equation*}
+
+Recall that $R_{\uptheta}^\textsc{mtc}$ is the following classification risk:
+\begin{equation*}
+R_{\uptheta}^{\textsc{mtc}}(f, \DCal)
+= \frac{1}{N} \sum_{u=1}^U \sum_{i \in P_u} \left( 
+  \frac{1}{p M_+^i} \sum_{m: y_m^i = 1} e^{-p f(m, u, i)} 
+  + \frac{1}{M_-^i} \sum_{m': y_{m'}^i = 0} e^{f(m', u, i)} \right),
+\end{equation*}
+
+Let $\uptheta^* \in \argmin_{\uptheta} R_{\uptheta}^{\textsc{mtc}}$ (assuming minimisers exist),
+we want to prove that $\uptheta^* \in \argmin_{\uptheta} \widetilde R_{\uptheta}^{\textsc{rank}}$.
+
+\begin{proof}
+We follow the proof technique in~\cite{ertekin2011equivalence}
+by first introducing a constant feature $1$ for each song,
+without loss of generality, let the first feature of $\x_m, \, m \in \{1,\dots,M\}$ be the constant feature, \ie $x_m^0 = 1$.
+We can show that
+$\frac{\partial \, R_{\uptheta}^{\textsc{mtc}}} {\partial \, \uptheta} = 0$ implies
+$\frac{\partial \, \widetilde R_{\uptheta}^{\textsc{rank}}} {\partial \, \uptheta} = 0$,
+which means minimisers of $R_{\uptheta}^{\textsc{mtc}}$ also minimise $\widetilde R_{\uptheta}^{\textsc{rank}}$.
+
+Let 
+%\begin{equation*}
+%\begin{aligned}
+$
+\displaystyle
+0 
+= \frac{\partial \, R_{\uptheta}^{\textsc{mtc}}} {\partial \, \beta_i^0}
+= \frac{1}{N} \left( 
+   \frac{1}{p M_+^i} \sum_{m: y_m^i = 1} e^{-p f(m, u, i)} (-p)
+   + \frac{1}{M_-^i} \sum_{m': y_{m'}^i = 0} e^{f(m', u, i)} \right),
+\ \forall i \in P_u, \, u \in \{1,\dots,U\},
+$
+%\end{aligned}
+%\end{equation*}
+
+we have
+\begin{equation}
+\label{eq:eq1}
+\frac{1}{M_+^i} \sum_{m: y_m^i = 1} e^{-p f(m, u, i)} \Bigg|_{\uptheta = \uptheta^*}
+= \frac{1}{M_-^i} \sum_{m': y_{m'}^i = 0} e^{f(m', u, i)} \Bigg|_{\uptheta = \uptheta^*}, 
+\ \forall i \in P_u, \, u \in \{1,\dots,U\},
+\end{equation}
+
+Further, let
+\begin{equation*}
+\zero 
+= \frac{\partial \, R_{\uptheta}^{\textsc{mtc}}} {\partial \, \betabm_i} 
+= \frac{1}{N} \left( 
+   \frac{1}{p M_+^i} \sum_{m: y_m^i = 1} e^{-p f(m, u, i)} (-p \x_m)
+   + \frac{1}{M_-^i} \sum_{m': y_{m'}^i = 0} e^{f(m', u, i)} \x_{m'} \right),
+\ \forall i \in P_u, \, u \in \{1,\dots,U\},
+\end{equation*}
+we have
+\begin{equation}
+\label{eq:eq2}
+\frac{1}{M_+^i} \sum_{m: y_m^i = 1} e^{-p f(m, u, i)} \x_m \Bigg|_{\uptheta = \uptheta^*}
+= \frac{1}{M_-^i} \sum_{m': y_{m'}^i = 0} e^{f(m', u, i)} \x_{m'} \Bigg|_{\uptheta = \uptheta^*},
+\ \forall i \in P_u, \, u \in \{1,\dots,U\}.
+\end{equation}
+
+Note that $\forall i \in P_u, \, u \in \{1,\dots,U\}$,
+\begin{equation}
+\label{eq:eq3}
+\resizebox{\textwidth}{!}{$
+\begin{aligned}
+&\frac{\partial \, \widetilde R_{\uptheta}^{\textsc{rank}}} {\partial \, \betabm_i} \Bigg|_{\uptheta = \uptheta^*} \\
+&= \frac{1}{N M_-^i} \left[
+   \frac{1}{p} \left( \sum_{m: y_m^i = 1} e^{-p f(m, u, i)} \right)^{\frac{1}{p} - 1} 
+   \sum_{m: y_m^i = 1} e^{-p f(m, u, i)} (-p \x_m) 
+   \sum_{m': y_{m'}^i = 0} e^{f(m', u, i)} + 
+   \left( \sum_{m: y_m^i = 1} e^{-p f(m, u, i)} \right)^\frac{1}{p}
+   \sum_{m': y_{m'}^i = 0} e^{f(m', u, i)} \x_{m'} \right] \\
+&= \frac{-1}{N M_-^i}
+   \left( \sum_{m: y_m^i = 1} e^{-p f(m, u, i)} \right)^{\frac{1}{p} - 1} 
+   \left[
+   \sum_{m: y_m^i = 1} e^{-p f(m, u, i)} \x_m 
+   \sum_{m': y_{m'}^i = 0} e^{f(m', u, i)} -
+   \sum_{m: y_m^i = 1} e^{-p f(m, u, i)}
+   \sum_{m': y_{m'}^i = 0} e^{f(m', u, i)} \x_{m'} \right] \\
+&= \frac{-1}{N M_-^i}
+   \left( \sum_{m: y_m^i = 1} e^{-p f(m, u, i)} \right)^{\frac{1}{p} - 1} 
+   \left[
+   \left( \sum_{m: y_m^i = 1} e^{-p f(m, u, i)} \x_m \right)
+   \left( \frac{M_-^i}{M_+^i} \sum_{m: y_m^i = 1} e^{-p f(m, u, i)} \right) -
+   \sum_{m: y_m^i = 1} e^{-p f(m, u, i)}
+   \sum_{m': y_{m'}^i = 0} e^{f(m', u, i)} \x_{m'} \right] \\
+&  \hspace{1.5em} (\text{by Eq.~\ref{eq:eq1}}) \\
+&= \frac{-1}{N M_-^i}
+   \left( \sum_{m: y_m^i = 1} e^{-p f(m, u, i)} \right)^\frac{1}{p}
+   \left[
+   \frac{M_-^i}{M_+^i}
+   \sum_{m: y_m^i = 1} e^{-p f(m, u, i)} \x_m -
+   \sum_{m': y_{m'}^i = 0} e^{f(m', u, i)} \x_{m'} \right] \\
+&= \zero \ (\text{by Eq.~\ref{eq:eq2}}).
+\end{aligned}
+$}
+\end{equation}
+
+Let 
+\begin{equation*}
+h(u, i) 
+= \frac{1}{N M_-^i} \left( \sum_{m: y_m^i = 1} e^{-p f(m, u, i)} \right)^\frac{1}{p} 
+  \sum_{m': y_{m'}^i = 0} e^{f(m', u, i)},
+\ \forall i \in P_u, \, u \in \{1,\dots,U\}.
+\end{equation*}
+
+Similar to Eq.~(\ref{eq:eq3}), we have
+\begin{equation}
+\label{eq:eq4}
+\frac{\partial \, h(u, i)}{\partial \, \betabm_i} \Bigg|_{\uptheta = \uptheta^*} = \zero,
+\ \forall i \in P_u, \, u \in \{1,\dots,U\}.
+\end{equation}
+
+Note that $\forall u \in \{1,\dots,U\}$,
+by Eq.~(\ref{eq:eq4})
+\begin{equation}
+\label{eq:eq5}
+\frac{\partial \, \widetilde R_{\uptheta}^{\textsc{rank}}} {\partial \, \alphabm_u} \Bigg|_{\uptheta = \uptheta^*} 
+= \sum_{i \in P_u} \frac{\partial \, h(u, i)}{\partial \, \alphabm_u}  \Bigg|_{\uptheta = \uptheta^*}
+= \sum_{i \in P_u} \frac{\partial \, h(u, i)}{\partial \, \betabm_i} \Bigg|_{\uptheta = \uptheta^*}
+= \zero,
+\end{equation}
+and
+\begin{equation}
+\label{eq:eq6}
+\frac{\partial \, \widetilde R_{\uptheta}^{\textsc{rank}}} {\partial \, \bmu} \Bigg|_{\uptheta = \uptheta^*} 
+= \sum_{u=1}^U \sum_{i \in P_u} \frac{\partial \, h(u, i)}{\partial \, \bmu} \Bigg|_{\uptheta = \uptheta^*}
+= \sum_{u=1}^U \sum_{i \in P_u} \frac{\partial \, h(u, i)}{\partial \, \betabm_i} \Bigg|_{\uptheta = \uptheta^*}
+= \zero.
+\end{equation}
+
+Finally, by Eq.~(\ref{eq:eq3}), Eq.~(\ref{eq:eq5}), and Eq.~(\ref{eq:eq6}), $\uptheta^* \in \argmin_{\uptheta} \widetilde R_{\uptheta}^{\textsc{rank}}$.
+
+\end{proof}

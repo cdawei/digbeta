@@ -1,0 +1,22 @@
+% !TEX root=main.tex
+
+Trajectory recommendation is the problem of recommending a sequence of places in a city for a tourist to visit.
+It is strongly desirable for the recommended sequence to avoid loops, as tourists typically would not wish to revisit the same location.
+Given some learned model that scores sequences, how can we then find the highest-scoring sequence that is loop-free?
+
+This paper studies this problem, with three contributions.
+First, we detail three distinct approaches to the problem -- 
+%a heuristic inspired by Christofides' algorithm,
+graph-based heuristics,
+integer linear programming, and
+list extensions of the Viterbi algorithm
+-- and qualitatively summarise their strengths and weaknesses.
+Second, we explicate how two ostensibly different approaches to the list Viterbi algorithm are in fact fundamentally identical.
+Third, we conduct experiments on real-world trajectory recommendation datasets to identify the tradeoffs imposed by each of the three approaches.
+
+Overall, our results indicate that a greedy graph-based heuristic offer excellent performance and runtime, leading us to recommend its use for removing loops at prediction time.
+
+% Overall, we find that
+% all methods offer performance improvements over na\"{i}vely predicting a sequence with loops;
+% Christofides' algorithm is at least an order of magnitude faster than the other methods, but with a significant sacrifice in accuracy;
+% and that the list Viterbi is faster than the ILP for short trajectories, but the ILP is superior for longer trajectories.

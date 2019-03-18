@@ -1,0 +1,92 @@
+\section{Problem formulation}
+\label{sec:formulation}
+
+The trajectory recommendation problem is: given a set of points-of-interest (POI) $\mathcal{P}$ and a trajectory query $\mathbf{x} = (s, K)$,
+where $s \in \mathcal{P}$ is the desired start POI and $K > 1$ is the number of POIs in the desired trajectory (including the start location $s$).
+We want to recommend a sequence of POIs $\mathbf{y}^*$ that maximises utility, i.e., for a suitable function $f(\cdot,\cdot)$,
+\begin{equation*}
+\mathbf{y}^* = \argmax_{\mathbf{y} \in \mathcal{Y}_\mathbf{x}}~f(\mathbf{x}, \mathbf{y}),
+\end{equation*}
+where $\mathcal{Y}_\mathbf{x}$ is the set of all possible trajectories with POIs in $\mathcal{P}$ and satisfying query $\mathbf{x}$.
+$\mathbf{y} = (y_1 = s,~ y_2, \dots, y_K)$ is a trajectory with $K$ POIs, and $y_j \ne y_k$ if $j \ne k$ 
+which is known as \emph{no duplicates constraint}.
+
+Instead of the number of desired POIs, we can constrain the trajectory with a total time budget $T$.
+In this case, the number of POIs $K$ can be treated as a \emph{hidden} variable, with additional constraint $\sum_{k=1}^K t_k \le T$ 
+where $t_k$ is the time spent at POI $y_k$.
+
+
+
+\subsection{A concrete example}
+\label{sec:example}
+
+Given a set of $10$ points-of-interest (POI) in Melbourne 
+\begin{align*}
+\mathcal{P} = \{ 
+& \textit{\small Eureka Tower, Federation Square, Flinders Street Railway Station, Luna Park, Melbourne Aquarium, Melbourne Cricket Ground,} \\
+& \textit{\small Melbourne Zoo, National Gallery of Victoria, Royal Exhibition Building, University of Melbourne} \}
+\end{align*}
+and a query $\mathbf{x} = \{\textit{\small University of Melbourne},~ 5\}$,
+we would like to recommend a trajectory 
+\begin{equation*}
+\mathbf{y} = \{\textit{\small University of Melbourne},~ y_2, \dots, y_5\},~ y_k \in \mathcal{P},~ k=2,\dots,5.
+\end{equation*}
+by modelling trajectory data we have with POI and query related features as described in Section~\ref{sec:feature}.
+
+
+
+\subsection{Related problems}
+\label{sec:related}
+
+This problem is related to automatic playlist generation, 
+where we recommend a sequence of songs given a specified song (a.k.a. the seed) and the number of new songs.
+Formally, given a library of songs and a query $\mathbf{x} = (s, K)$, where $s$ is the seed and $K$ is the number of songs in playlist,
+we produce a list with $K$ songs (without duplication) by maximising the likelihood~\cite{chen2012playlist},
+\begin{equation*}
+%\max_{(y_1,\dots,y_K)} \prod_{k=2}^K \mathbb{P}(y_{k-1} \given y_k),~ y_1 = s ~\text{and}~ y_j \ne y_k,~ j \ne k.
+\mathbf{y}^* = \argmax_{\mathbf{y} \in \mathcal{P}_\mathbf{x}}~ \mathbb{P}(\mathbf{y} \given \mathbf{x}),~ \mathbf{y} = (y_1=s,\dots,y_K) 
+~\text{and}~ y_j \ne y_k ~\text{if}~ j \ne k.
+\end{equation*}
+
+Another similar problem is choosing a small set of photos from a large photo library and compiling them into a slideshow or movie.
+
+
+
+\subsection{Evaluation metrics and loss functions}
+\label{sec:evaluation}
+
+To evaluate the performance of a certain recommendation algorithm,
+we need to measure the similarity (or loss) given prediction $\hat{\mathbf{y}}$ and ground truth $\mathbf{y}$.
+Metrics researchers have used include
+\begin{itemize}
+\item Hamming loss $\frac{1}{K} \sum_{j=1}^K \llb \hat{y}_j \neq y_j \rrb$, this checks if every position is the same.
+
+\item F$_1$ score on points~\cite{ijcai15}, where we care about the set of correctly recommended POIs. 
+      Let $\texttt{set}(\mathbf{y})$ denote the set of POIs in trajectory $\mathbf{y}$, F$_1$ score on points is defined as
+\begin{equation*}
+F_1 = \frac{2  P_{\textsc{point}}  R_{\textsc{point}}}{P_{\textsc{point}} + R_{\textsc{point}}} ~~\text{where}~
+P_{\textsc{point}} = \frac{| \texttt{set}(\hat{\mathbf{y}}) \cap \texttt{set}(\mathbf{y}) |}{| \texttt{set}(\hat{\mathbf{y}}) |}~\text{and}~
+R_{\textsc{point}} = \frac{| \texttt{set}(\hat{\mathbf{y}}) \cap \texttt{set}(\mathbf{y}) |}{| \texttt{set}(\mathbf{y}) |}.
+\end{equation*}
+If $| \hat{\mathbf{y}} | = | \mathbf{y} |$, this metric is just the unordered Hamming loss, 
+i.e., Hamming loss between two binary indicator vectors of size $| \mathcal{P} |$.
+
+
+\item F$_1$ score on pairs~\cite{cikm16paper}, where we care about the set of correctly predicted POI pairs,
+\begin{equation*}
+\text{pairs-F}_1 = \frac{2 P_{\textsc{pair}} R_{\textsc{pair}}}{P_{\textsc{pair}} + R_{\textsc{pair}}}~~\text{where}~
+P_{\textsc{pair}} = \frac{N_c} {| \texttt{set}(\hat{\mathbf{y}}) | (| \texttt{set}(\hat{\mathbf{y}}) | - 1) / 2}~\text{and}~
+R_{\textsc{pair}} = \frac{N_c} {| \texttt{set}(\mathbf{y}) | (| \texttt{set}(\mathbf{y}) | - 1) / 2},
+\end{equation*}
+and $N_c = \sum_{j=1}^{| \mathbf{y} | - 1} \sum_{k=j+1}^{| \mathbf{y} |} \llb y_j \prec_{\bar{\mathbf{y}}} y_k \rrb$,
+here $y_j \prec_{\bar{\mathbf{y}}} y_k$ denotes that POI $y_j$ appears before POI $y_k$ in trajectory $\bar{\mathbf{y}}$.
+We define pairs-F$_1 = 0$ when $N_c = 0$.
+
+\end{itemize}
+
+However, if we cast a trajectory $\mathbf{y} = (y_1,\dots,y_K)$ as a ranking of POIs in $\mathcal{P}$,
+where $y_k$ has a rank $| \mathcal{P} | - k + 1$ and any other POI $p \notin \mathbf{y}$ has a rank $0$ ($0$ is an arbitrary choice).
+We can make use of ranking evaluation metrics such as Kendall's $\tau$ or Spearman's $\rho$, by taking care of ties in ranks.
+
+\eat{TODO: Write these down and contrast, esp. to pairs-F1}.
+

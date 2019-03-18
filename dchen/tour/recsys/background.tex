@@ -1,0 +1,96 @@
+% !TEX root=main.tex
+
+We now formalise the problem of interest and outline its challenges.
+
+%
+\subsection{Trajectory recommendation}
+
+Fix some set $\PCal$ of points-of-interest (POIs) in a city.
+A \emph{trajectory}\footnote{In graph theory, this is also referred to as a walk.} is any sequence of POIs, possibly containing loops (repeated POIs).
+In the \emph{trajectory recommendation} problem, we are given as input a training set of historical tourists' trajectories.
+From this, we wish to design a \emph{trajectory recommender}, which accepts a
+\emph{trajectory query} $\x = (s, l)$, comprising a start POI $s \in \PCal$, and trip length $l \!>\! 1$, %(\ie the desired number of POIs, including $s$),
+and produces one or more sequences of $l$ POIs starting from $s$. %that conform to the query.
+
+Formally, let $\XCal \defEq \PCal \times \{ 2, 3, \ldots \}$ be the set of possible queries,
+$\YCal \defEq \bigcup_{l = 2}^\infty \PCal^l$ be the set of all possible trajectories,
+and for fixed $\x \in \XCal$, $\YCal_{\x} \subset \YCal$ be the set of trajectories that conform to the constraints imposed by $\x$,
+\ie if $\x = (s, l)$ then
+%$\YCal_{\x} = \left\{ \y \in \PCal^l \mid y_1 = s \right\}$.
+$\YCal_{\x} = \{ \y \in \PCal^l \mid y_1 = s \}$.
+Then, the {trajectory recommendation} problem has:
+
+\vspace{0.5\baselineskip}
+
+\begin{mdframed}[innertopmargin=3pt,innerbottommargin=3pt,skipbelow=5pt,roundcorner=8pt,backgroundcolor=red!3,topline=false,rightline=false,leftline=false,bottomline=false]
+	\begin{tabular}{ll}
+		{\sc Input}:  & training set $\left\{ \left( \x^{(i)}, \y^{(i)} \right) \right\}_{i = 1}^n \in ( \XCal \times \YCal )^n$ \\
+		{\sc Output}: & a trajectory recommender $r \colon \XCal \to \YCal$ \\
+	\end{tabular}
+\end{mdframed}
+
+\vspace{0.5\baselineskip}
+
+One way to design a trajectory recommender is to find a (query, trajectory) affinity function $f \colon \XCal \times \YCal \to \mathbb{R}$, and let
+\begin{equation}
+	\label{eqn:argmax}
+	r( x ) \defEq \argmax_{\y \in \YCal_x}~f(\x, \y).
+\end{equation}
+%In particular, $\y = (s,~ y_2, \dots, y_l)$ is a trajectory with $l$ POIs. %, which has no sub-tours. %i.e. $y_j \ne y_k$ if $j \ne k$.
+%This was the view proposed in~\cite{cikm16paper} where they authors considered an
+%objective function that added two components together: a POI score and a transition score.
+Several choices of $f$ are possible.
+\citet{cikm16paper} proposed to use $f$ given by a RankSVM model. %, combined with a transition score between POIs.
+While offering strong performance, this has a conceptual disadvantage highlighted in the previous section:
+it does not model global cohesion, and could result in solutions such as recommending three restaurants in a row.
+
+To overcome this, \citet{Chen:2017} proposed to use $f$ given by a structured SVM (SSVM),
+wherein $f( \x, \y ) = \mathbf{w}^T \Phi( \x, \y )$ for a suitable feature mapping $\Phi$.
+%In the case of an SSVM with pairwise potentials,
+When this feature mapping decomposes into terms that depend only on adjacent elements in the sequence $\y$ (akin to a linear-chain conditional random field),
+the optimisation in Equation \ref{eqn:argmax} can be solved with the classic Viterbi algorithm.
+
+\input{schematic}
+
+%
+\subsection{Path recommendation}
+
+We argue that the definition of trajectory recommendation is incomplete for a simple reason:
+in most cases, a tourist will not want to revisit the same POI.
+Instead, what is needed is to recommend a \emph{path}, \ie a trajectory that does not have any repeated POIs.
+Let $\thickbar{\YCal} \subset \YCal$ be the set of all possible paths,
+and for fixed $\x \in \XCal$, let $\thickbar{\YCal}_{\x} \subset \thickbar{\YCal}$ be the set of paths that conform to the constraints imposed by $\x$.
+We now wish to construct a \emph{path recommender} $r \colon \XCal \to \thickbar{\YCal}$ via
+\begin{equation}
+	\label{eqn:argmax-path}
+	r( x ) \defEq \argmax_{\y \in \thickbar{\YCal}_x}~f(\x, \y).
+\end{equation}
+For $f$ given by an SSVM, Equation \ref{eqn:argmax-path} requires we depart from the standard Viterbi algorithm, as the sequence in Equation \ref{eqn:argmax} may well have a loop.\footnote{In SSVMs, this issue also arises during training \citep{Chen:2017}, but we focus here only on the prediction problem. See \S\ref{sec:discussion} for additional comments.}
+There are two distinct modes of attack available:
+\begin{enumerate}
+	\item seek an approximate solution to the problem,
+	via heuristics that exploit a graph view of Equation \ref{eqn:argmax-path}.
+	%that remove loops present in the standard Viterbi solution,
+	%or by greedily constructing a loop-free solution.
+
+	\item seek an exact solution to the problem,
+	via integer linear programming,
+	or top-$K$ extensions of the Viterbi algorithm. %(known as list Viterbi algorithms).
+\end{enumerate}
+While \citet{Chen:2017} suggested the latter exact approaches, they did not formally compare their performance either qualitatively or quantitatively;
+they did not detail the different top-$K$ extensions of the Viterbi algorithm and the connections thereof;
+and they did not consider approximate approaches.
+
+In the sequel, we thus detail the above approaches in more detail.
+Figure \ref{fig:schematics} gives a schematic overview of these algorithms.
+
+
+% {\color{red!75}
+% \begin{itemize}
+%   %\item connect to workshop
+%   %\item distinguish between next location vs whole trajectory
+%   %\item define word usage: trajectory, path, walk, sequence, tour, etc.
+%   \item describe relation to travelling salesman, and say why different
+%   %\item contributions of this paper
+% \end{itemize}
+% }
